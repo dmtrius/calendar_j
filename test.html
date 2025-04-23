@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        select, button, input {
+            padding: 10px;
+            margin: 5px;
+        }
+        #results {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-family: monospace;
+            font-style: normal;
+            word-break: normal;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        #judge {
+            width: 25%;
+            display: flex;
+        }
+
+        .json-key { color: brown; }
+        .json-value { color: navy; }
+        .json-string { color: olive; }
+        .json-number { color: teal; }
+        .json-boolean { color: purple; }
+        .json-null { color: red; }
+
+        .loading-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+        }
+            
+        .dot {
+            width: 12px;
+            height: 12px;
+            margin: 0 5px;
+            background: #3498db;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.2s infinite;
+        }
+            
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+            
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+        }
+    </style>
+    <title>JavaScript Test</title>
+    <script src="https://cmap.jud11.flcourts.org/ebench/js/moment.min.js"></script>
+    <script src="https://cmap.jud11.flcourts.org/ebench/js/moment-timezone-with-data.js"></script>
+    
+    <script src="data.js"></script>
+    <script src="data2.js"></script>
+    <script src="data3.js"></script>
+
+    <script src="dataSS.js"></script>
+    <script src="dataSSblock.js"></script>
+    <script src="dataSSplan.js"></script>    
+
+    <script src="calendar2.js"></script>
+    <script>
+        console.log("Testing...");
+    </script>
+</head>
+<i>
+    <h1>Testing Page</h1>
+    <div id="judges" class="judge">
+        <input type="text" disabled id="judge" placeholder="Abby  Cynamon (CA09) ID:24306"/>
+    </div>
+    <div>
+        <select id="categoryType" title="category" placeholder="Category...">
+            <option value="MC">MC</option>
+            <option value="SS">SS</option>
+        </select>
+        <button onclick="window.click()">Test</button>
+        <button onclick="window.fetchJudges2()">Get Judges</button>
+        <button onclick="window.clear()">Clear</button>
+    </div>
+    <div id="results">...waiting for action...</div>
+    </div>
+</body>
+</html>
