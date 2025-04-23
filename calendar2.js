@@ -163,7 +163,8 @@ function getAvailableCalendarEvents({ start, end, categoryType, plans, events, b
 
       // Gather events for this plan and date
       const eventsByDay = events.filter(ev => {
-        if (ev.plan.id !== plan.id || ev.statusType === 'CANCELLED') return false;
+        if (!ev.plan || !ev.plan.id) return false;
+        if (ev?.plan?.id !== plan?.id || ev.statusType === 'CANCELLED') return false;
         const evDate = new Date(ev.start);
         return (
           evDate.getFullYear() === planDate.getFullYear() &&
@@ -347,7 +348,7 @@ async function getData(url, params, useProxy) {
   if (useProxy) {
     proxy = "http://localhost:8889/proxy/";
   }
-  const response = await fetch(`${proxy}${encodeURIComponent(url)}`, {
+  const response = await fetch(`${proxy}${url}`, {
     mode: 'cors',
     method: 'POST',
     "headers": {
@@ -381,7 +382,7 @@ async function click() {
   loading();
   params.categoryType = document.getElementById("categoryType").value;
 
-  const id = document.getElementById("judge_id").value || 24306;
+  const id = document.getElementById("judge_id")?.value || 24306;
   
   if (params.categoryType === 'MC') {
     Object.assign(params, {
