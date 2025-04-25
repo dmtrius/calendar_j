@@ -134,20 +134,25 @@
     <script src="dataSSplan.js"></script>    
 
     <script src="calendar.js"></script>
+    <script>
+        $( document ).ready(function() {
+            window.init();
+        });
+    </script>
 </head>
-<body onload="window.clear()">
+<body>
     <h1>Testing Page</h1>
     <div id="judges" class="judge">
         <input type="text" disabled id="judge" placeholder="Abby  Cynamon (CA09) ID:24306"/>
     </div>
     <div>
-        <select id="categoryType" title="category" placeholder="Category...">
+        <select id="categoryType" title="category" placeholder="Category..." class="api-dependent-button">
             <option value="MC">MC</option>
             <option value="SS">SS</option>
         </select>
-        <button type="button" class="main_action" onclick="window.click()">Test Calendar</button>
-        <button type="button" onclick="window.fetchJudges()">Get Judges</button>
-        <button type="button" onclick="window.clear()">Clear</button>
+        <button type="button" class="main_action api-dependent-button" onclick="window.click()">Test Calendar</button>
+        <button type="button" class="api-dependent-button" onclick="window.fetchJudges()">Get Judges</button>
+        <button type="button" class="api-dependent-button" onclick="window.clear()">Clear</button>
     </div>
     <div id="results"></div>
     </div>

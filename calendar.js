@@ -428,7 +428,6 @@ async function click() {
     end: Date.now() + 30 * 24 * 60 * 60 * 1000
   }
 
-
   const promisesTasks = [
     { name: "plans", "promise": getData(plansUrl, request) },
     { name: "blocks", "promise": getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" })) },
@@ -467,4 +466,38 @@ async function click() {
   let result = getAvailableCalendarEvents(params);
   console.log(result);
   printResult(result);
+}
+
+function init() {
+  checkApiWithHeadAndDisableButtons();
+}
+
+async function checkApiWithHeadAndDisableButtons() {
+  const buttons = document.querySelectorAll('.api-dependent-button'); // Select all buttons
+  const apiUrl = "http://localhost:8889/proxy/" + judgesUrl;
+  try {
+      const response = await fetch(apiUrl, {
+          method: 'HEAD',
+          headers: {
+              'Accept': 'application/json',
+          },
+      });
+      if (response.ok) {
+          buttons.forEach(button => {
+              button.disabled = false;
+          });
+          clear();
+      } else {
+          buttons.forEach(button => {
+              button.disabled = true;
+          });
+          clear(response);
+      }
+  } catch (error) {
+      console.error('API check failed:', error);
+      buttons.forEach(button => {
+          button.disabled = true;
+      });
+      clear(error);
+  }
 }
