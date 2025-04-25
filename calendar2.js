@@ -409,21 +409,52 @@ async function click() {
     end: Date.now() + 30 * 24 * 60 * 60 * 1000
   }
 
-  let plans = await getData(plansUrl, request, true);
-  console.log('plans', plans);
-  params.plans = plans;
-  let blockPlans = await getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" }), true);
-  console.log('blockPlans', blockPlans);
-  params.blockPlans = blockPlans;
-  let events = await getData(eventsUrl, {
-    start: Date.now(),
-    end: Date.now() + 30 * 24 * 60 * 60 * 1000,
-    division: {
-      id: id
+
+  const promisesTasks = [
+    { name: "plans", "promise": getData(plansUrl, request, true) },
+    { name: "blocks", "promise": getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" }), true) },
+    { name: "events", "promise": getData(eventsUrl, {
+      start: Date.now(),
+      end: Date.now() + 30 * 24 * 60 * 60 * 1000,
+      division: {
+        id: id
+      }
+    }, true) }
+  ];
+
+  const promises = promisesTasks.map(task => task.promise);
+  const results = await Promise.all(promises);
+  const mappedResults = promisesTasks.map((task, index) => ({
+    name: task.name,
+    result: results[index],
+  }));
+  console.log("mappedResults", mappedResults);
+  mappedResults.forEach((task) => {
+    if (task.name === "plans") {
+      params.plans = task.result;
+    } else if (task.name === "blocks") {
+      params.blockPlans = task.result;
+    } else if (task.name === "events") {
+      params.events = task.result;
     }
-  }, true);
-  console.log('events', events);
-  params.events = events;
+  });
+
+  //let plans = await getData(plansUrl, request, true);
+  //let blockPlans = await getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" }), true);
+  //let events = await getData(eventsUrl, {
+  //   start: Date.now(),
+  //   end: Date.now() + 30 * 24 * 60 * 60 * 1000,
+  //   division: {
+  //     id: id
+  //   }
+  // }, true);
+
+  // console.log('events', mappedResults.events);
+  // console.log('plans', mappedResults.plans);
+  // console.log('blockPlans', mappedResults.blocks);
+  // params.plans = mappedResults.plans;
+  // params.blockPlans = mappedResults.blockPlans;
+  // params.events = mappedResults.events;
 
   let result = getAvailableCalendarEvents(params);
   console.log(result);

@@ -22,10 +22,20 @@
             word-wrap: break-word;
             white-space: pre-wrap;
         }
-
         #judge {
             width: 25%;
             display: flex;
+        }
+        .main_action {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
         }
 
         .json-key { color: brown; }
@@ -91,7 +101,7 @@
             <option value="MC">MC</option>
             <option value="SS">SS</option>
         </select>
-        <button onclick="window.click()">Test</button>
+        <button class="main_action" onclick="window.click()">Test</button>
         <button onclick="window.fetchJudges2()">Get Judges</button>
         <button onclick="window.clear()">Clear</button>
     </div>
