@@ -1,1 +1,1 @@
-python3 -m http.server 8000 --directory C:\work\
+python3 -m http.server 8000 --directory ./
