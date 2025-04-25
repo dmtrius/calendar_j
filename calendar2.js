@@ -342,12 +342,9 @@ function createJudgesList(data) {
   document.getElementById("judges").innerHTML = selectHTML;
 }
 
-async function getData(url, params, useProxy) {
+async function getData(url, params) {
   loading();
-  let proxy = "";
-  if (useProxy) {
-    proxy = "http://localhost:8889/proxy/";
-  }
+  const  proxy = "http://localhost:8889/proxy/";
   const response = await fetch(`${proxy}${url}`, {
     mode: 'cors',
     method: 'POST',
@@ -357,10 +354,12 @@ async function getData(url, params, useProxy) {
     body: JSON.stringify(params)
   });
   if (!response.ok) {
+    clear();
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
   const data = await response.json();
   if (data.error) {
+    clear();
     throw new Error(`Error: ${data.error}`);
   }
   return data;
@@ -411,23 +410,29 @@ async function click() {
 
 
   const promisesTasks = [
-    { name: "plans", "promise": getData(plansUrl, request, true) },
-    { name: "blocks", "promise": getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" }), true) },
+    { name: "plans", "promise": getData(plansUrl, request) },
+    { name: "blocks", "promise": getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" })) },
     { name: "events", "promise": getData(eventsUrl, {
-      start: Date.now(),
+      start: Date.now() + 24 * 60 * 60 * 1000,
       end: Date.now() + 30 * 24 * 60 * 60 * 1000,
       division: {
         id: id
       }
-    }, true) }
+    }) }
   ];
 
   const promises = promisesTasks.map(task => task.promise);
-  const results = await Promise.all(promises);
-  const mappedResults = promisesTasks.map((task, index) => ({
-    name: task.name,
-    result: results[index],
-  }));
+  let mappedResults = [];
+  try {
+    const results = await Promise.all(promises);
+    mappedResults = promisesTasks.map((task, index) => ({
+      name: task.name,
+      result: results[index],
+    }));
+  } catch (error) {
+    console.error("Error:", error.message);
+    return;
+  }
   console.log("mappedResults", mappedResults);
   mappedResults.forEach((task) => {
     if (task.name === "plans") {
@@ -438,23 +443,6 @@ async function click() {
       params.events = task.result;
     }
   });
-
-  //let plans = await getData(plansUrl, request, true);
-  //let blockPlans = await getData(plansUrl, Object.assign(request, { statusType: "UNAVAILABLE", categoryType: "B" }), true);
-  //let events = await getData(eventsUrl, {
-  //   start: Date.now(),
-  //   end: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  //   division: {
-  //     id: id
-  //   }
-  // }, true);
-
-  // console.log('events', mappedResults.events);
-  // console.log('plans', mappedResults.plans);
-  // console.log('blockPlans', mappedResults.blocks);
-  // params.plans = mappedResults.plans;
-  // params.blockPlans = mappedResults.blockPlans;
-  // params.events = mappedResults.events;
 
   let result = getAvailableCalendarEvents(params);
   console.log(result);
