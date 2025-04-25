@@ -240,22 +240,23 @@ function syntaxHighlight(json) {
     return;
   }
   json = escapeHtml(json);
-  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|\b\d+\.?\d*\b)/g, function (match) {
-    let cls = 'json-value';
-    if (/^"/.test(match)) {
-      if (/:$/.test(match)) {
-        cls = 'json-key';
-      } else {
-        cls = 'json-string';
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|\b\d+\.?\d*\b)/g, 
+    function (match) {
+      let cls = 'json-value';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'json-key';
+        } else {
+          cls = 'json-string';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'json-boolean';
+      } else if (/null/.test(match)) {
+        cls = 'json-null';
+      } else if (/[\d.]+/.test(match)) {
+        cls = 'json-number';
       }
-    } else if (/true|false/.test(match)) {
-      cls = 'json-boolean';
-    } else if (/null/.test(match)) {
-      cls = 'json-null';
-    } else if (/[\d.]+/.test(match)) {
-      cls = 'json-number';
-    }
-    return '<span class="' + cls + '">' + match + '</span>';
+      return '<span class="' + cls + '">' + match + '</span>';
   });
 }
 
@@ -291,11 +292,22 @@ function convertTimestamps(obj, locale = 'en-US', options = {}) {
   return processValue(obj);
 }
 
-function fetchJudges2() {
-  _fetchJudges2();
+async function fetchJudges() {
+  // _fetchJudges();
+  try {
+    const judges = await getData(judgesUrl, {});
+    if (judges.error) {
+      clear(judges.error);
+    } else {
+      printResult(judges);
+      createJudgesList(judges);
+    }
+  } catch (error) {
+    clear(error);
+  }
 }
 
-async function _fetchJudges2() {
+async function _fetchJudges() {
   loading();
   try {
     let proxy = "http://localhost:8889/proxy/";
@@ -315,9 +327,12 @@ async function _fetchJudges2() {
       printResult(data);
       createJudgesList(data);
     })
-    .catch(error => console.error('FETCH Error:', error));
+    .catch(error => {console.error('FETCH Error:', error);
+      clear(error);
+    });
   } catch (error) {
       console.error('TRY Error:', error);
+      clear(error);
   }
 }
 
@@ -329,8 +344,12 @@ function loading() {
   document.getElementById("results").innerHTML = "<div class=\"loading-dots\"><span class=\"dot\"></span><span class=\"dot\"></span><span class=\"dot\"></span></div>";
 }
 
-function clear() {
-  document.getElementById("results").innerHTML = "";
+function clear(error) {
+  if (error) {
+    document.getElementById("results").innerHTML = `<div class="error">${error.message}</div>`;
+  } else {
+    document.getElementById("results").innerHTML = "... waiting for action ...";
+  }
 }
 
 function createJudgesList(data) {
@@ -374,6 +393,7 @@ let params = {
   blockPlans: blockJson
 };
 
+const judgesUrl = "schedulingDivisions";
 const eventsUrl = "events/range";
 const plansUrl = "plans";
 
