@@ -293,7 +293,6 @@ function convertTimestamps(obj, locale = 'en-US', options = {}) {
 }
 
 async function fetchJudges() {
-  // _fetchJudges();
   try {
     const judges = await getData(judgesUrl, {});
     if (judges.error) {
@@ -307,62 +306,56 @@ async function fetchJudges() {
   }
 }
 
-async function _fetchJudges() {
-  loading();
-  try {
-    let proxy = "http://localhost:8889/proxy/";
-    await fetch(`${proxy}schedulingDivisions`, {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({})
-    })
-    .then(response => {
-      return response.json();
-    })
-    .then(data => {
-      printResult(data);
-      createJudgesList(data);
-    })
-    .catch(error => {console.error('FETCH Error:', error);
-      clear(error);
-    });
-  } catch (error) {
-      console.error('TRY Error:', error);
-      clear(error);
-  }
-}
-
 function printResult(result) {
   document.getElementById("results").innerHTML = '<pre>' + syntaxHighlight(JSON.stringify(convertTimestamps(result), null, 2)) + '</pre>';
+}
+
+function printMessage(message) {
+  document.getElementById("results").innerHTML = `<span class="message">${message}</span>`;
 }
 
 function loading() {
   document.getElementById("results").innerHTML = "<div class=\"loading-dots\"><span class=\"dot\"></span><span class=\"dot\"></span><span class=\"dot\"></span></div>";
 }
 
-function clear(error) {
-  if (error) {
+function clear(error, force) {
+  if (force === true) {
+    document.getElementById("results").innerHTML = `<div class="error">${error}</div>`;
+    return;
+  }
+  if (typeof error !== 'undefined' && error && error.message) {
     document.getElementById("results").innerHTML = `<div class="error">${error.message}</div>`;
   } else {
     document.getElementById("results").innerHTML = "... waiting for action ...";
   }
+  hideOverlay();
 }
 
 function createJudgesList(data) {
-  let selectHTML = '<select id="judge_id">';
-  data.forEach(item => {
-    selectHTML += `<option value="${item.id}">${item.label}</option>`;
+  const $select = $('<select>').attr('id', 'judge_id');
+  
+  $.each(data, function(index, item) {
+      $('<option>')
+          .val(item.id)
+          .text(item.label)
+          .appendTo($select);
   });
-  selectHTML += '</select>';
-  document.getElementById("judges").innerHTML = selectHTML;
+  
+  $('#judges').html($select);
 }
 
+// function createJudgesList(data) {
+//   let selectHTML = '<select id="judge_id">';
+//   data.forEach(item => {
+//     selectHTML += `<option value="${item.id}">${item.label}</option>`;
+//   });
+//   selectHTML += '</select>';
+//   document.getElementById("judges").innerHTML = selectHTML;
+// }
+
 async function getData(url, params) {
-  loading();
+  showOverlay();
+  printMessage("fetching data ...");
   const  proxy = "http://localhost:8889/proxy/";
   const response = await fetch(`${proxy}${url}`, {
     mode: 'cors',
@@ -398,7 +391,7 @@ const eventsUrl = "events/range";
 const plansUrl = "plans";
 
 async function click() {
-  loading();
+  showOverlay();
   params.categoryType = document.getElementById("categoryType").value;
 
   const id = document.getElementById("judge_id")?.value || 24306;
@@ -468,12 +461,21 @@ async function click() {
   printResult(result);
 }
 
+function showOverlay() {
+  $('#loading-overlay').addClass('active');
+}
+function hideOverlay() {
+  $('#loading-overlay').removeClass('active');
+}
+
 function init() {
   checkApiWithHeadAndDisableButtons();
 }
 
 async function checkApiWithHeadAndDisableButtons() {
-  const buttons = document.querySelectorAll('.api-dependent-button'); // Select all buttons
+  showOverlay();
+  printMessage("checking API ...");
+  const buttons = document.querySelectorAll('.api-dependent-button');
   const apiUrl = "http://localhost:8889/proxy/" + judgesUrl;
   try {
       const response = await fetch(apiUrl, {
@@ -491,13 +493,15 @@ async function checkApiWithHeadAndDisableButtons() {
           buttons.forEach(button => {
               button.disabled = true;
           });
-          clear(response);
+          clear(`API not accessible >>> ${response.status}: ${response.statusText}`, true);
       }
   } catch (error) {
       console.error('API check failed:', error);
       buttons.forEach(button => {
           button.disabled = true;
       });
-      clear(error);
+      clear(error, true);
+  } finally {
+      hideOverlay();
   }
 }
